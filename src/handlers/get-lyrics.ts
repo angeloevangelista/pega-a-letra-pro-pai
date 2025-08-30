@@ -1,25 +1,12 @@
-import axios from "axios";
 import { Request, Response } from "express";
 
-interface ILrcLibResponseItem {
-  id: number;
-  name: string;
-  trackName: string;
-  artistName: string;
-  albumName: string;
-  duration: number;
-  instrumental: boolean;
-  plainLyrics: string;
-  syncedLyrics: string;
-}
-
-interface ILyricsLine {
-  seconds: number;
-  lyrics: string;
-}
+import LrcLibService from "../services/lrclib-service";
+import { LyricsLine } from "../interfaces/lyrics-service";
+import { LyricsNotFoundError } from "../errors/errors";
+import GeniusService from "../services/genius-service";
 
 async function getLyricsHandler(request: Request, response: Response) {
-  const { artist, song } = request.query;
+  const { artist, song } = request.query as { song: string; artist: string };
 
   if (!artist || !song) {
     return response.status(400).json({
@@ -28,50 +15,37 @@ async function getLyricsHandler(request: Request, response: Response) {
     });
   }
 
+  let lyricsResponse: LyricsLine[] = [];
+
   try {
-    const { data: foundLyrics } = await axios.get<ILrcLibResponseItem[]>(
-      "https://lrclib.net/api/search",
-      {
-        params: {
-          track_name: song,
-          artist_name: artist,
-        },
-      }
-    );
+    const lyricsLines = await new LrcLibService().getSong({
+      song,
+      artist,
+    });
 
-    if (foundLyrics.length === 0) {
-      return response.status(404).json({ error: "No lyrics found" });
+    lyricsResponse = lyricsLines;
+  } catch (error: any) {
+    if (!(error instanceof LyricsNotFoundError)) {
+      console.log(error);
+      return response.status(500).json({ error: error.message });
     }
+  }
 
-    const lyric = foundLyrics.at(0);
-
-    const lyricsResponse = lyric?.syncedLyrics
-      .split("\n[")
-      .map<ILyricsLine>((line) => {
-        const formattedTimestamp = line.startsWith("[")
-          ? line.slice(line.indexOf("[") + 1, line.indexOf("]"))
-          : line.slice(0, line.indexOf("]"));
-
-        const minutes = Number(formattedTimestamp.split(":").at(0));
-
-        const seconds = Number(
-          formattedTimestamp.split(":").pop()!.split(".").at(0)
-        );
-
-        const timestampInSeconds = minutes * 60 + seconds;
-
-        return {
-          lyrics: line.slice(line.indexOf("]") + 2),
-          seconds: timestampInSeconds,
-        };
+  if (lyricsResponse.length === 0) {
+    try {
+      const lyricsLines = await new GeniusService().getSong({
+        song,
+        artist,
       });
 
-    return response.json(lyricsResponse);
-  } catch (error: any) {
-    console.log(error);
-
-    return response.status(500).json({ error: error.message });
+      lyricsResponse = lyricsLines;
+    } catch (error: any) {
+      console.log(error);
+      return response.status(500).json({ error: error.message });
+    }
   }
+
+  return response.json(lyricsResponse);
 }
 
 export default getLyricsHandler;

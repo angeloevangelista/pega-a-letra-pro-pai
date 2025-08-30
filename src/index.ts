@@ -1,5 +1,6 @@
+import "dotenv/config";
+
 import cors from "cors";
-import axios from "axios";
 import express from "express";
 
 import router from "./routes";
