@@ -84,15 +84,7 @@ class GeniusService implements ILyricsService {
       "https://genius.com" + foundSong.path,
       {
         headers: {
-          "User-Agent": "PostmanRuntime/7.45.0",
-          Accept: "*/*",
-          "Cache-Control": "no-cache",
-          "Postman-Token": "60d0050e-9504-4167-8c6f-f6512e211115",
-          Host: "genius.com",
-          "Accept-Encoding": "gzip, deflate, br",
-          Connection: "keep-alive",
-          Cookie:
-            "_cfuvid=gp.D2S4hNuADh9JUfSIMPV83RLu6vuNqYBDaBL6Zy_8-1756597163539-0.0.1.1-604800000",
+          Authorization: `Bearer ${process.env.GENIUS_API_ACCESS_TOKEN}`,
         },
       }
     );
