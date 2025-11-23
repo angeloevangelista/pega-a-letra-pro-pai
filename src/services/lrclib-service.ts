@@ -49,7 +49,7 @@ class LrcLibService implements ILyricsService {
     
       const minutes = Number(formattedTimestamp.split(":").at(0));
     
-      const seconds = Number(formattedTimestamp.split(":").pop().split(".").at(0));
+      const seconds = Number(formattedTimestamp.split(":").pop()!.split(".").at(0));
     
       const timestampInSeconds = minutes * 60 + seconds;
     
