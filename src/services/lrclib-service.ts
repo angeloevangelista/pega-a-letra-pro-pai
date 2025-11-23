@@ -41,26 +41,23 @@ class LrcLibService implements ILyricsService {
       throw new LyricsNotFoundError("No lyrics found");
     }
 
-    const lyricsResponse = lyric.syncedLyrics
-      .split("\n[")
-      .map<LyricsLine>((line) => {
-        const formattedTimestamp = line.startsWith("[")
-          ? line.slice(line.indexOf("[") + 1, line.indexOf("]"))
-          : line.slice(0, line.indexOf("]"));
-
-        const minutes = Number(formattedTimestamp.split(":").at(0));
-
-        const seconds = Number(
-          formattedTimestamp.split(":").pop()!.split(".").at(0)
-        );
-
-        const timestampInSeconds = minutes * 60 + seconds;
-
-        return {
-          lyrics: line.slice(line.indexOf("]") + 2),
-          seconds: timestampInSeconds,
-        };
-      });
+    const lyricsResponse = lyric.syncedLyrics.split("\n").map((line) => {
+      const formattedTimestamp = line.slice(
+        line.indexOf("[") + 1,
+        line.indexOf("]")
+      );
+    
+      const minutes = Number(formattedTimestamp.split(":").at(0));
+    
+      const seconds = Number(formattedTimestamp.split(":").pop().split(".").at(0));
+    
+      const timestampInSeconds = minutes * 60 + seconds;
+    
+      return {
+        lyrics: line.slice(line.indexOf("]") + 1).trim(),
+        seconds: timestampInSeconds,
+      };
+    });
 
     return lyricsResponse;
   }
