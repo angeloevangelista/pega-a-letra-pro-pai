@@ -1,0 +1,13 @@
+@baseUrl = http://localhost:3333
+
+
+### Health check
+GET {{baseUrl}}/api/health
+Accept: application/json
+
+
+### Get lyrics
+GET {{baseUrl}}/api/lyrics?song=Old+Family+Buffet&artist=WillyRodriguezWasTaken,+Star+Starer
+# GET {{baseUrl}}/api/lyrics?song=Danger+Line&artist=Avenged+Sevenfold
+# GET {{baseUrl}}/api/lyrics?song=Lovers+on+the+Sun+(feat.+Sam+Martin)&artist=David+Guetta,+Sam+Martin
+Content-Type: application/json
